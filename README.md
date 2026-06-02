@@ -9,3 +9,12 @@ This project is an E-Commerce Asset Management System built to monitor and manag
 - **Edit Assets  :** Update existing asset details as inventory changes.
 - **Delete Assets:** Remove specific asset from the database.
 
+## Database Setup
+CREATE TABLE assets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    quantity INT NOT NULL,
+    status VARCHAR(50) DEFAULT 'In Stock',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
