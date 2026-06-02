@@ -72,12 +72,12 @@ $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <table class="table table-hover align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary">
                         <tr>
-                            <th class="fw-semibold px-4 py-3">ID</th>
-                            <th class="fw-semibold py-3">Item Name</th>
-                            <th class="fw-semibold py-3">Category</th>
-                            <th class="fw-semibold py-3">Qty</th>
-                            <th class="fw-semibold py-3">Status</th>
-                            <th class="fw-semibold py-3 text-end px-4">Actions</th>
+                            <th class="fw-semibold px-4 py-3 bg-primary text-white">ID</th>
+                            <th class="fw-semibold py-3 bg-primary text-white">Item Name</th>
+                            <th class="fw-semibold py-3 bg-primary text-white">Category</th>
+                            <th class="fw-semibold py-3 bg-primary text-white">Qty</th>
+                            <th class="fw-semibold py-3 bg-primary text-white">Status</th>
+                            <th class="fw-semibold py-3 text-end px-4 bg-primary text-white">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="border-top-0">
