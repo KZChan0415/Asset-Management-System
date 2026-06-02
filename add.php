@@ -14,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $pdo->prepare($sql);
         
         if ($stmt->execute([$item_name, $category, $quantity, $status])) {
+            $_SESSION['success'] = "Asset added successfully.";
             header("Location: index.php");
             exit();
         } else {
