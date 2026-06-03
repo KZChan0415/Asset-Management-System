@@ -4,8 +4,15 @@ require 'connect_db.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $item_name = $_POST['item_name'];
     $category = $_POST['category'];
-    $quantity = $_POST['quantity'];
-    $status = $_POST['status'];
+    $quantity = (int)$_POST['quantity'];
+
+if ($quantity === 0) {
+        $status = 'Out of Stock';
+    } elseif ($quantity <= 10) {
+        $status = 'Low Stock';
+    } else {
+        $status = 'In Stock';
+    }
 
     if ($quantity < 0) {
         $error = "Quantity cannot be negative.";
@@ -53,7 +60,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <div class="container mt-5" style="max-width: 600px;">
+    <nav class="navbar bg-white shadow-sm mb-4 border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center text-decoration-none" href="index.php">
+                <div class="bg-primary text-white rounded p-2 me-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                    <i class="bi bi-box-seam-fill fs-5"></i>
+                </div>
+                <span class="fs-4 fw-bolder text-dark" style="letter-spacing: -0.5px;">CPL<span class="text-primary">Assets</span></span>
+            </a>
+            
+            <div class="d-flex align-items-center text-secondary">
+                <i class="bi bi-person-circle fs-4"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3" style="max-width: 600px;">
         <div class="mb-4">
             <a href="index.php" class="text-decoration-none text-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
@@ -82,15 +104,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-secondary small">QUANTITY</label>
                         <input type="number" name="quantity" class="form-control" placeholder="0" min="0" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold text-secondary small">STATUS</label>
-                        <select name="status" class="form-select">
-                            <option value="In Stock">In Stock</option>
-                            <option value="Low Stock">Low Stock</option>
-                            <option value="Out of Stock">Out of Stock</option>
-                        </select>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">

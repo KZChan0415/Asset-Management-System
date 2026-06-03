@@ -56,10 +56,33 @@ $low_stock = $pdo->query("SELECT COUNT(*) FROM assets WHERE status = 'Low Stock'
             transform: translateY(-2px); 
             box-shadow: 0 4px 6px rgba(220, 53, 69, 0.1);
         }
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .sortable:hover {
+            background-color: #0b5ed7 !important;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <nav class="navbar bg-white shadow-sm mb-4 border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center text-decoration-none" href="index.php">
+                <div class="bg-primary text-white rounded p-2 me-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                    <i class="bi bi-box-seam-fill fs-5"></i>
+                </div>
+                <span class="fs-4 fw-bolder text-dark" style="letter-spacing: -0.5px;">CPL<span class="text-primary">Assets</span></span>
+            </a>
+            
+            <div class="d-flex align-items-center text-secondary">
+                <i class="bi bi-person-circle fs-4"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="text-dark fw-bold mb-0">Asset Dashboard</h2>
@@ -98,34 +121,49 @@ $low_stock = $pdo->query("SELECT COUNT(*) FROM assets WHERE status = 'Low Stock'
                 </div>
             </div>
         </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-8">
+
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
                 <div class="input-group shadow-sm rounded">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search assets by name...">
+                    <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-0 shadow-none" id="searchInput" placeholder="Search by item name...">
                 </div>
             </div>
-            <div class="col-md-4">
-                <select class="form-select shadow-sm">
-                    <option value="">Filter by Status</option>
+            <div class="col-md-3">
+                <select class="form-select shadow-sm border-0" id="filterCategory">
+                    <option value="">All Categories</option>
+                    </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select shadow-sm border-0" id="filterStatus">
+                    <option value="">All Statuses</option>
                     <option value="In Stock">In Stock</option>
                     <option value="Low Stock">Low Stock</option>
                     <option value="Out of Stock">Out of Stock</option>
                 </select>
             </div>
         </div>
-
+            
         <div class="card overflow-hidden">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 text-nowrap">
-                    <thead class="table-light text-secondary">
+                    <thead class="bg-primary text-white">
                         <tr>
-                            <th class="fw-semibold px-4 py-3 bg-primary text-white">ID</th>
-                            <th class="fw-semibold py-3 bg-primary text-white">Item Name</th>
-                            <th class="fw-semibold py-3 bg-primary text-white">Category</th>
-                            <th class="fw-semibold py-3 bg-primary text-white">Qty</th>
-                            <th class="fw-semibold py-3 bg-primary text-white">Status</th>
+                            <th class="fw-semibold px-4 py-3 bg-primary text-white sortable" data-col="0" title="Click to sort">
+                                ID <i class="bi bi-arrow-down-up ms-1 small text-white-50"></i>
+                            </th>
+                            <th class="fw-semibold py-3 bg-primary text-white sortable" data-col="1" title="Click to sort">
+                                Item Name <i class="bi bi-arrow-down-up ms-1 small text-white-50"></i>
+                            </th>
+                            <th class="fw-semibold py-3 bg-primary text-white sortable" data-col="2" title="Click to sort">
+                                Category <i class="bi bi-arrow-down-up ms-1 small text-white-50"></i>
+                            </th>
+                            <th class="fw-semibold py-3 bg-primary text-white sortable" data-col="3" title="Click to sort">
+                                Qty <i class="bi bi-arrow-down-up ms-1 small text-white-50"></i>
+                            </th>
+                            <th class="fw-semibold py-3 bg-primary text-white sortable" data-col="4" title="Click to sort">
+                                Status <i class="bi bi-arrow-down-up ms-1 small text-white-50"></i>
+                            </th>
                             <th class="fw-semibold py-3 text-end px-4 bg-primary text-white">Actions</th>
                         </tr>
                     </thead>
@@ -182,6 +220,110 @@ $low_stock = $pdo->query("SELECT COUNT(*) FROM assets WHERE status = 'Low Stock'
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById("searchInput");
+            const filterCategory = document.getElementById("filterCategory");
+            const filterStatus = document.getElementById("filterStatus");
+            const tbody = document.querySelector("tbody");
+            const allRows = Array.from(tbody.querySelectorAll("tr"));
+            const dataRows = allRows.filter(row => row.cells.length > 1);
+            const originalRows = [...allRows]; 
+            const uniqueCategories = new Set();
+
+            dataRows.forEach(row => {
+                uniqueCategories.add(row.cells[2].textContent.trim());
+            });
+
+            Array.from(uniqueCategories).sort().forEach(category => {
+                if (category) {
+                    const option = document.createElement("option");
+                    option.value = category.toLowerCase();
+                    option.textContent = category;
+                    filterCategory.appendChild(option);
+                }
+            });
+
+            function applyFilters() {
+                const searchVal = searchInput.value.toLowerCase();
+                const catVal = filterCategory.value.toLowerCase();
+                const statVal = filterStatus.value.toLowerCase();
+
+                dataRows.forEach(row => {
+                    const rowName = row.cells[1].textContent.trim().toLowerCase();
+                    const rowCat = row.cells[2].textContent.trim().toLowerCase();
+                    const rowStat = row.cells[4].textContent.trim().toLowerCase();
+                    const matchSearch = rowName.includes(searchVal);
+                    const matchCat = (catVal === "" || rowCat === catVal);
+                    const matchStat = (statVal === "" || rowStat.includes(statVal)); 
+
+                    if (matchSearch && matchCat && matchStat) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            }
+
+            searchInput.addEventListener("input", applyFilters);
+            filterCategory.addEventListener("change", applyFilters);
+            filterStatus.addEventListener("change", applyFilters);
+
+            let currentSortCol = -1;
+            let currentSortDir = 'default';
+            const headers = document.querySelectorAll("th.sortable");
+            
+            headers.forEach(header => {
+                header.addEventListener("click", function() {
+                    const colIndex = parseInt(this.getAttribute("data-col"));
+
+                    if (currentSortCol === colIndex) {
+                        if (currentSortDir === 'default') currentSortDir = 'asc';
+                        else if (currentSortDir === 'asc') currentSortDir = 'desc';
+                        else currentSortDir = 'default';
+                    } else {
+                        currentSortCol = colIndex;
+                        currentSortDir = 'asc';
+                    }
+
+                    headers.forEach(h => {
+                        h.querySelector("i").className = "bi bi-arrow-down-up ms-1 small text-white-50";
+                    });
+
+                    const icon = this.querySelector("i");
+                    if (currentSortDir === 'asc') icon.className = "bi bi-arrow-up ms-1 small text-white";
+                    else if (currentSortDir === 'desc') icon.className = "bi bi-arrow-down ms-1 small text-white";
+
+                    let rowsToSort = Array.from(tbody.querySelectorAll("tr")).filter(row => row.cells.length > 1);
+
+                    if (currentSortDir === 'default') {
+                        tbody.innerHTML = '';
+                        originalRows.forEach(row => tbody.appendChild(row));
+                    } else {
+                        rowsToSort.sort((a, b) => {
+                            let aText = a.cells[colIndex].textContent.trim();
+                            let bText = b.cells[colIndex].textContent.trim();
+
+                            if (colIndex === 0 || colIndex === 3) {
+                                aText = parseFloat(aText.replace(/[^0-9.-]+/g,""));
+                                bText = parseFloat(bText.replace(/[^0-9.-]+/g,""));
+                            }
+
+                            if (aText < bText) return currentSortDir === 'asc' ? -1 : 1;
+                            if (aText > bText) return currentSortDir === 'asc' ? 1 : -1;
+                            return 0;
+                        });
+
+                        tbody.innerHTML = '';
+                        rowsToSort.forEach(row => tbody.appendChild(row));
+                    }
+     
+                    applyFilters(); 
+                });
+            });
+        });
+    </script>
+
     <script>
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
